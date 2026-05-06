@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mobile Fixer — Bookmarklet</title>
+<meta name="theme-color" content="#0a0a0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MobileFixer">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0c;--panel:#111114;--border:#222228;--border2:#2e2e38;
+  --accent:#e8ff47;--text:#dddde8;--muted:#5a5a6e;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'SF Pro Display',-apple-system,monospace;
+  min-height:100vh;padding:calc(20px + var(--safe-t)) 20px calc(20px + var(--safe-b));
+  line-height:1.6;
+}
+h1{font-size:1.3rem;color:var(--accent);margin-bottom:6px;font-family:monospace;letter-spacing:0.04em}
+.sub{font-size:0.75rem;color:var(--muted);margin-bottom:28px}
+.step{
+  background:var(--panel);border:1px solid var(--border2);
+  border-radius:10px;padding:18px;margin-bottom:14px;
+}
+.step-num{
+  font-size:0.6rem;font-family:monospace;color:var(--accent);
+  letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;
+}
+.step p{font-size:0.85rem;color:var(--text);margin-bottom:10px;line-height:1.5}
+.step small{font-size:0.72rem;color:var(--muted);display:block;margin-top:6px}
+
+/* The draggable bookmarklet link */
+#bookmarklet-link{
+  display:block;
+  background:var(--accent);color:#000;
+  text-align:center;padding:16px;border-radius:8px;
+  font-family:monospace;font-size:0.9rem;font-weight:700;
+  letter-spacing:0.04em;text-decoration:none;
+  margin:12px 0;-webkit-tap-highlight-color:transparent;
+  word-break:break-all;
+}
+#bookmarklet-link:active{opacity:0.8}
+
+.manual-url{
+  background:var(--bg);border:1px solid var(--border2);border-radius:6px;
+  padding:10px;font-family:monospace;font-size:0.65rem;color:var(--muted);
+  word-break:break-all;margin-top:8px;
+  -webkit-user-select:all;user-select:all;
+}
+
+.copy-btn{
+  display:block;width:100%;margin-top:8px;
+  padding:10px;background:transparent;border:1px solid var(--border2);
+  color:var(--text);font-family:monospace;font-size:0.72rem;
+  border-radius:6px;cursor:pointer;text-align:center;
+  -webkit-tap-highlight-color:transparent;
+}
+.copy-btn:active{border-color:var(--accent);color:var(--accent)}
+
+.works-on{
+  margin-top:20px;padding:14px;background:var(--panel);
+  border:1px solid var(--border2);border-radius:10px;
+}
+.works-on h3{font-size:0.7rem;color:var(--muted);font-family:monospace;
+  text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
+.works-on ul{list-style:none;font-size:0.8rem;color:var(--text)}
+.works-on ul li{padding:4px 0;display:flex;align-items:center;gap:8px}
+.works-on ul li::before{content:'✓';color:var(--accent);font-weight:700}
+</style>
+</head>
+<body>
+
+<h1>⬡ Mobile Fixer</h1>
+<p class="sub">A bookmarklet that fixes any desktop website on your iPhone</p>
+
+<div class="step">
+  <div class="step-num">Step 1 — Add the bookmarklet</div>
+  <p>On iPhone: Bookmark any page first, then <strong>edit that bookmark</strong> and replace the URL with the code below.</p>
+  <p>On desktop Safari/Chrome: <strong>drag the button below</strong> to your bookmarks bar.</p>
+  <a id="bookmarklet-link" href="javascript:(function()%7B%20var%20existing%20%3D%20document.getElementById('__mv-panel')%3B%20if(existing)%7B%20existing.remove()%3B%20return%3B%20%7D%20var%20vp%20%3D%20document.querySelector('meta%5Bname%3Dviewport%5D')%3B%20if(!vp)%7B%20vp%20%3D%20document.createElement('meta')%3B%20vp.name%3D'viewport'%3B%20document.head.appendChild(vp)%3B%20%7D%20vp.content%20%3D%20'width%3Ddevice-width%2C%20initial-scale%3D1%2C%20maximum-scale%3D5%2C%20user-scalable%3Dyes'%3B%20var%20style%20%3D%20document.createElement('style')%3B%20style.id%20%3D%20'__mv-style'%3B%20style.textContent%20%3D%20%5B%20'*%20%7B%20-webkit-text-size-adjust%3A%20100%25%20!important%3B%20%7D'%2C%20'body%20%7B%20overflow-x%3A%20hidden%20!important%3B%20min-width%3A%20unset%20!important%3B%20width%3A%20100%25%20!important%3B%20%7D'%2C%20'button%2C%20%5Brole%3Dbutton%5D%2C%20a%2C%20input%5Btype%3Dbutton%5D%2C%20input%5Btype%3Dsubmit%5D%20%7B'%2C%20'%20min-height%3A%2044px%20!important%3B%20min-width%3A%2044px%20!important%3B'%2C%20'%20padding%3A%208px%2012px%20!important%3B%20font-size%3A%2015px%20!important%3B'%2C%20'%7D'%2C%20'input%3Anot(%5Btype%3Dhidden%5D)%2C%20select%2C%20textarea%20%7B'%2C%20'%20min-height%3A%2044px%20!important%3B%20font-size%3A%2016px%20!important%3B'%2C%20'%20border-radius%3A%206px%20!important%3B'%2C%20'%7D'%2C%20'%23__mv-panel%20%7B%20all%3A%20initial%20!important%3B%20%7D'%2C%20%5D.join('%20')%3B%20document.head.appendChild(style)%3B%20var%20panel%20%3D%20document.createElement('div')%3B%20panel.id%20%3D%20'__mv-panel'%3B%20var%20z%20%3D%202147483647%3B%20panel.style.cssText%20%3D%20%5B%20'position%3Afixed'%2C'bottom%3A80px'%2C'right%3A14px'%2C'z-index%3A'%2Bz%2C%20'background%3A%230a0a0c'%2C'border%3A1px%20solid%20%232e2e38'%2C'border-radius%3A12px'%2C%20'padding%3A10px%208px'%2C'display%3Aflex'%2C'flex-direction%3Acolumn'%2C'gap%3A7px'%2C%20'box-shadow%3A0%204px%2024px%20rgba(0%2C0%2C0%2C0.7)'%2C'font-family%3Amonospace'%2C%20'width%3A52px'%2C'align-items%3Acenter'%2C%20%5D.join('%3B')%3B%20var%20scale%20%3D%201.0%3B%20var%20body%20%3D%20document.body%3B%20var%20html%20%3D%20document.documentElement%3B%20function%20btn(label%2C%20title%2C%20fn)%7B%20var%20b%20%3D%20document.createElement('button')%3B%20b.textContent%20%3D%20label%3B%20b.title%20%3D%20title%3B%20b.style.cssText%20%3D%20%5B%20'all%3Aunset'%2C'display%3Aflex'%2C'align-items%3Acenter'%2C'justify-content%3Acenter'%2C%20'width%3A38px'%2C'height%3A38px'%2C'border-radius%3A8px'%2C%20'background%3A%2318181c'%2C'border%3A1px%20solid%20%232e2e38'%2C%20'color%3A%23dddde8'%2C'font-size%3A1rem'%2C'cursor%3Apointer'%2C%20'font-family%3Amonospace'%2C'-webkit-tap-highlight-color%3Atransparent'%2C%20%5D.join('%3B')%3B%20b.addEventListener('click'%2C%20fn)%3B%20b.addEventListener('touchend'%2C%20function(e)%7B%20e.stopPropagation()%3B%20e.preventDefault()%3B%20fn()%3B%20%7D)%3B%20return%20b%3B%20%7D%20function%20applyZoom()%7B%20html.style.setProperty('zoom'%2C%20scale%2C%20'important')%3B%20html.style.setProperty('-webkit-transform'%2C%20'scale('%2Bscale%2B')'%2C%20'important')%3B%20html.style.setProperty('-webkit-transform-origin'%2C%20'top%20left'%2C%20'important')%3B%20html.style.setProperty('width'%2C%20(100%2Fscale)%2B'%25'%2C%20'important')%3B%20lbl.textContent%20%3D%20Math.round(scale*100)%2B'%25'%3B%20%7D%20var%20lbl%20%3D%20document.createElement('div')%3B%20lbl.style.cssText%20%3D%20'color%3A%23c8f53c%3Bfont-size%3A0.55rem%3Bfont-family%3Amonospace%3Btext-align%3Acenter%3Bline-height%3A1'%3B%20lbl.textContent%20%3D%20'100%25'%3B%20panel.appendChild(btn('%2B'%2C'Zoom%20in'%2C%20function()%7B%20scale%3DMath.min(2.5%2Cscale%2B0.1)%3B%20applyZoom()%3B%20%7D))%3B%20panel.appendChild(btn('%E2%88%92'%2C'Zoom%20out'%2C%20function()%7B%20scale%3DMath.max(0.3%2Cscale-0.1)%3B%20applyZoom()%3B%20%7D))%3B%20panel.appendChild(btn('1%3A1'%2C'Reset%20zoom'%2C%20function()%7B%20scale%3D1.0%3B%20applyZoom()%3B%20%7D))%3B%20panel.appendChild(lbl)%3B%20var%20sep%20%3D%20document.createElement('div')%3B%20sep.style.cssText%20%3D%20'width%3A30px%3Bheight%3A1px%3Bbackground%3A%232e2e38'%3B%20panel.appendChild(sep)%3B%20panel.appendChild(btn('%E2%9F%B7'%2C'Fit%20width'%2C%20function()%7B%20var%20sw%20%3D%20window.screen.width%3B%20var%20bw%20%3D%20document.body.scrollWidth%20%7C%7C%20document.documentElement.scrollWidth%3B%20if(bw%20%3E%20sw)%7B%20scale%20%3D%20sw%2Fbw%3B%20applyZoom()%3B%20%7D%20else%20%7B%20scale%3D1%3B%20applyZoom()%3B%20%7D%20%7D))%3B%20var%20fixedHidden%20%3D%20false%3B%20panel.appendChild(btn('%E2%96%A4'%2C'Toggle%20fixed%20bars'%2C%20function()%7B%20fixedHidden%20%3D%20!fixedHidden%3B%20var%20els%20%3D%20document.querySelectorAll('*')%3B%20for(var%20i%3D0%3Bi%3Cels.length%3Bi%2B%2B)%7B%20var%20cs%20%3D%20window.getComputedStyle(els%5Bi%5D)%3B%20if(cs.position%3D%3D%3D'fixed'%20%7C%7C%20cs.position%3D%3D%3D'sticky')%7B%20if(els%5Bi%5D.id%20!%3D%3D%20'__mv-panel')%7B%20els%5Bi%5D.style.setProperty('display'%2C%20fixedHidden%3F'none'%3A''%2C%20'important')%3B%20%7D%20%7D%20%7D%20%7D))%3B%20panel.appendChild(btn('%E2%86%91'%2C'Scroll%20to%20top'%2C%20function()%7B%20window.scrollTo(%7Btop%3A0%2Cbehavior%3A'smooth'%7D)%3B%20%7D))%3B%20panel.appendChild(btn('%E2%9C%95'%2C'Remove%20panel'%2C%20function()%7B%20panel.remove()%3B%20document.getElementById('__mv-style')%20%26%26%20document.getElementById('__mv-style').remove()%3B%20html.style.removeProperty('zoom')%3B%20html.style.removeProperty('-webkit-transform')%3B%20html.style.removeProperty('-webkit-transform-origin')%3B%20html.style.removeProperty('width')%3B%20%7D))%3B%20document.body.appendChild(panel)%3B%20setTimeout(function()%7B%20var%20bw%20%3D%20Math.max(document.body.scrollWidth%2C%20document.documentElement.scrollWidth)%3B%20var%20sw%20%3D%20window.innerWidth%3B%20if(bw%20%3E%20sw%20*%201.1)%7B%20scale%20%3D%20sw%2Fbw%3B%20applyZoom()%3B%20%7D%20%7D%2C%20500)%3B%20%7D)()%3B">⬡ Mobile Fixer — drag me to bookmarks</a>
+  <small>Or copy the code manually and paste it as a bookmark URL:</small>
+  <div class="manual-url" id="bm-code">javascript:(function()%7B%20var%20existing%20%3D%20document.getElementById('__mv-panel')%3B%20if(existing)%7B%20existing.remove()%3B%20return%3B%20%7D%20var%20vp%20%3D%20document.querySelector('meta%5Bname%3Dviewport%5D')%3B%20if(!vp)%7B%20vp%20%3D%20document.createElement('meta')%3B%20vp.name%3D'viewport'%3B%20document.head.appendChild(vp)%3B%20%7D%20vp.content%20%3D%20'width%3Ddevice-width%2C%20initial-scale%3D1%2C%20maximum-scale%3D5%2C%20user-scalable%3Dyes'%3B%20var%20style%20%3D%20document.createElement('style')%3B%20style.id%20%3D%20'__mv-style'%3B%20style.textContent%20%3D%20%5B%20'*%20%7B%20-webkit-text-size-adjust%3A%20100%25%20!important%3B%20%7D'%2C%20'body%20%7B%20overflow-x%3A%20hidden%20!important%3B%20min-width%3A%20unset%20!important%3B%20width%3A%20100%25%20!important%3B%20%7D'%2C%20'button%2C%20%5Brole%3Dbutton%5D%2C%20a%2C%20input%5Btype%3Dbutton%5D%2C%20input%5Btype%3Dsubmit%5D%20%7B'%2C%20'%20min-height%3A%2044px%20!important%3B%20min-width%3A%2044px%20!important%3B'%2C%20'%20padding%3A%208px%2012px%20!important%3B%20font-size%3A%2015px%20!important%3B'%2C%20'%7D'%2C%20'input%3Anot(%5Btype%3Dhidden%5D)%2C%20select%2C%20textarea%20%7B'%2C%20'%20min-height%3A%2044px%20!important%3B%20font-size%3A%2016px%20!important%3B'%2C%20'%20border-radius%3A%206px%20!important%3B'%2C%20'%7D'%2C%20'%23__mv-panel%20%7B%20all%3A%20initial%20!important%3B%20%7D'%2C%20%5D.join('%20')%3B%20document.head.appendChild(style)%3B%20var%20panel%20%3D%20document.createElement('div')%3B%20panel.id%20%3D%20'__mv-panel'%3B%20var%20z%20%3D%202147483647%3B%20panel.style.cssText%20%3D%20%5B%20'position%3Afixed'%2C'bottom%3A80px'%2C'right%3A14px'%2C'z-index%3A'%2Bz%2C%20'background%3A%230a0a0c'%2C'border%3A1px%20solid%20%232e2e38'%2C'border-radius%3A12px'%2C%20'padding%3A10px%208px'%2C'display%3Aflex'%2C'flex-direction%3Acolumn'%2C'gap%3A7px'%2C%20'box-shadow%3A0%204px%2024px%20rgba(0%2C0%2C0%2C0.7)'%2C'font-family%3Amonospace'%2C%20'width%3A52px'%2C'align-items%3Acenter'%2C%20%5D.join('%3B')%3B%20var%20scale%20%3D%201.0%3B%20var%20body%20%3D%20document.body%3B%20var%20html%20%3D%20document.documentElement%3B%20function%20btn(label%2C%20title%2C%20fn)%7B%20var%20b%20%3D%20document.createElement('button')%3B%20b.textContent%20%3D%20label%3B%20b.title%20%3D%20title%3B%20b.style.cssText%20%3D%20%5B%20'all%3Aunset'%2C'display%3Aflex'%2C'align-items%3Acenter'%2C'justify-content%3Acenter'%2C%20'width%3A38px'%2C'height%3A38px'%2C'border-radius%3A8px'%2C%20'background%3A%2318181c'%2C'border%3A1px%20solid%20%232e2e38'%2C%20'color%3A%23dddde8'%2C'font-size%3A1rem'%2C'cursor%3Apointer'%2C%20'font-family%3Amonospace'%2C'-webkit-tap-highlight-color%3Atransparent'%2C%20%5D.join('%3B')%3B%20b.addEventListener('click'%2C%20fn)%3B%20b.addEventListener('touchend'%2C%20function(e)%7B%20e.stopPropagation()%3B%20e.preventDefault()%3B%20fn()%3B%20%7D)%3B%20return%20b%3B%20%7D%20function%20applyZoom()%7B%20html.style.setProperty('zoom'%2C%20scale%2C%20'important')%3B%20html.style.setProperty('-webkit-transform'%2C%20'scale('%2Bscale%2B')'%2C%20'important')%3B%20html.style.setProperty('-webkit-transform-origin'%2C%20'top%20left'%2C%20'important')%3B%20html.style.setProperty('width'%2C%20(100%2Fscale)%2B'%25'%2C%20'important')%3B%20lbl.textContent%20%3D%20Math.round(scale*100)%2B'%25'%3B%20%7D%20var%20lbl%20%3D%20document.createElement('div')%3B%20lbl.style.cssText%20%3D%20'color%3A%23c8f53c%3Bfont-size%3A0.55rem%3Bfont-family%3Amonospace%3Btext-align%3Acenter%3Bline-height%3A1'%3B%20lbl.textContent%20%3D%20'100%25'%3B%20panel.appendChild(btn('%2B'%2C'Zoom%20in'%2C%20function()%7B%20scale%3DMath.min(2.5%2Cscale%2B0.1)%3B%20applyZoom()%3B%20%7D))%3B%20panel.appendChild(btn('%E2%88%92'%2C'Zoom%20out'%2C%20function()%7B%20scale%3DMath.max(0.3%2Cscale-0.1)%3B%20applyZoom()%3B%20%7D))%3B%20panel.appendChild(btn('1%3A1'%2C'Reset%20zoom'%2C%20function()%7B%20scale%3D1.0%3B%20applyZoom()%3B%20%7D))%3B%20panel.appendChild(lbl)%3B%20var%20sep%20%3D%20document.createElement('div')%3B%20sep.style.cssText%20%3D%20'width%3A30px%3Bheight%3A1px%3Bbackground%3A%232e2e38'%3B%20panel.appendChild(sep)%3B%20panel.appendChild(btn('%E2%9F%B7'%2C'Fit%20width'%2C%20function()%7B%20var%20sw%20%3D%20window.screen.width%3B%20var%20bw%20%3D%20document.body.scrollWidth%20%7C%7C%20document.documentElement.scrollWidth%3B%20if(bw%20%3E%20sw)%7B%20scale%20%3D%20sw%2Fbw%3B%20applyZoom()%3B%20%7D%20else%20%7B%20scale%3D1%3B%20applyZoom()%3B%20%7D%20%7D))%3B%20var%20fixedHidden%20%3D%20false%3B%20panel.appendChild(btn('%E2%96%A4'%2C'Toggle%20fixed%20bars'%2C%20function()%7B%20fixedHidden%20%3D%20!fixedHidden%3B%20var%20els%20%3D%20document.querySelectorAll('*')%3B%20for(var%20i%3D0%3Bi%3Cels.length%3Bi%2B%2B)%7B%20var%20cs%20%3D%20window.getComputedStyle(els%5Bi%5D)%3B%20if(cs.position%3D%3D%3D'fixed'%20%7C%7C%20cs.position%3D%3D%3D'sticky')%7B%20if(els%5Bi%5D.id%20!%3D%3D%20'__mv-panel')%7B%20els%5Bi%5D.style.setProperty('display'%2C%20fixedHidden%3F'none'%3A''%2C%20'important')%3B%20%7D%20%7D%20%7D%20%7D))%3B%20panel.appendChild(btn('%E2%86%91'%2C'Scroll%20to%20top'%2C%20function()%7B%20window.scrollTo(%7Btop%3A0%2Cbehavior%3A'smooth'%7D)%3B%20%7D))%3B%20panel.appendChild(btn('%E2%9C%95'%2C'Remove%20panel'%2C%20function()%7B%20panel.remove()%3B%20document.getElementById('__mv-style')%20%26%26%20document.getElementById('__mv-style').remove()%3B%20html.style.removeProperty('zoom')%3B%20html.style.removeProperty('-webkit-transform')%3B%20html.style.removeProperty('-webkit-transform-origin')%3B%20html.style.removeProperty('width')%3B%20%7D))%3B%20document.body.appendChild(panel)%3B%20setTimeout(function()%7B%20var%20bw%20%3D%20Math.max(document.body.scrollWidth%2C%20document.documentElement.scrollWidth)%3B%20var%20sw%20%3D%20window.innerWidth%3B%20if(bw%20%3E%20sw%20*%201.1)%7B%20scale%20%3D%20sw%2Fbw%3B%20applyZoom()%3B%20%7D%20%7D%2C%20500)%3B%20%7D)()%3B</div>
+  <button class="copy-btn" onclick="copyCode()">Copy bookmarklet code</button>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 2 — Go to Topview (or any site)</div>
+  <p>Open <strong>topview.ai</strong> in Safari normally. Log in as usual.</p>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 3 — Tap the bookmarklet</div>
+  <p>Tap the <strong>address bar</strong>, type <strong>"Mobile"</strong> (or whatever you named it), and tap it.</p>
+  <p>A floating panel appears on screen with zoom controls.</p>
+  <small>Tap it again to remove the panel. All fixes are temporary — refresh to reset.</small>
+</div>
+
+<div class="works-on">
+  <h3>What it does</h3>
+  <ul>
+    <li>Fixes viewport so pinch-zoom works</li>
+    <li>Auto-scales page to fit your screen width</li>
+    <li>Makes buttons &amp; inputs finger-sized (44px)</li>
+    <li>Floating + / − zoom controls</li>
+    <li>Hide/show fixed headers &amp; footers</li>
+    <li>Works on ANY website you're already logged into</li>
+    <li>No app, no install, no server needed</li>
+  </ul>
+</div>
+
+<script>
+function copyCode(){
+  const code = document.getElementById('bm-code').textContent;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(code).then(()=>{
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'Copied ✓';
+      setTimeout(()=>btn.textContent='Copy bookmarklet code',2000);
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = code; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied ✓';
+    setTimeout(()=>btn.textContent='Copy bookmarklet code',2000);
+  }
+}
+</script>
+
+</body>
+</html>
