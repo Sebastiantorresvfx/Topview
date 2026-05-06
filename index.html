@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Topview Mobile</title>
+<meta name="theme-color" content="#0a0a0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Topview">
+<link rel="manifest" id="pwa-manifest" href="">
+<link rel="apple-touch-icon" id="apple-icon" href="">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0c;--panel:#111114;--border:#222228;--border2:#2e2e38;
+  --accent:#e8ff47;--text:#dddde8;--muted:#5a5a6e;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);touch-action:none}
+body{display:flex;flex-direction:column;padding-top:var(--safe-t);font-family:'SF Pro Display',-apple-system,sans-serif}
+
+/* ── TOOLBAR ── */
+#toolbar{
+  height:48px;background:var(--panel);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 10px;gap:8px;
+  flex-shrink:0;z-index:100;
+  overflow-x:auto;scrollbar-width:none;
+}
+#toolbar::-webkit-scrollbar{display:none}
+
+#site-logo{
+  font-size:0.85rem;font-weight:700;color:var(--accent);
+  white-space:nowrap;flex-shrink:0;letter-spacing:0.02em;
+  font-family:monospace;
+}
+
+.tb-btn{
+  font-size:0.65rem;font-weight:600;letter-spacing:0.04em;
+  text-transform:uppercase;padding:6px 10px;
+  border:1px solid var(--border2);background:transparent;
+  color:var(--text);cursor:pointer;white-space:nowrap;flex-shrink:0;
+  min-height:34px;-webkit-tap-highlight-color:transparent;
+  border-radius:4px;font-family:monospace;
+  transition:border-color 0.1s,color 0.1s;
+}
+.tb-btn:active{border-color:var(--accent);color:var(--accent)}
+.tb-sep{width:1px;height:18px;background:var(--border2);flex-shrink:0}
+#zoom-label{font-size:0.63rem;color:var(--muted);white-space:nowrap;flex-shrink:0;font-family:monospace}
+
+/* ── URL BAR ── */
+#url-bar-wrap{
+  display:flex;align-items:center;gap:6px;flex:1;min-width:120px;
+}
+#url-input{
+  flex:1;background:var(--bg);border:1px solid var(--border2);
+  color:var(--text);font-size:0.65rem;padding:5px 9px;
+  outline:none;border-radius:4px;font-family:monospace;
+  min-height:32px;-webkit-user-select:text;user-select:text;
+}
+#url-input:focus{border-color:var(--accent)}
+#go-btn{
+  font-size:0.65rem;font-weight:700;padding:5px 10px;
+  background:var(--accent);color:#000;border:none;
+  border-radius:4px;cursor:pointer;white-space:nowrap;
+  min-height:32px;font-family:monospace;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* ── FRAME CONTAINER ── */
+#frame-wrap{
+  flex:1;position:relative;overflow:hidden;
+  background:var(--bg);touch-action:none;
+}
+
+/* The iframe is positioned/scaled by JS */
+#site-frame{
+  position:absolute;
+  border:none;
+  /* Start at full width of a desktop — we'll scale it down */
+  width:1280px;
+  height:900px;
+  transform-origin:0 0;
+  background:#fff;
+}
+
+/* ── BLOCKED OVERLAY ── */
+#blocked-overlay{
+  display:none;position:absolute;inset:0;
+  background:var(--bg);z-index:50;
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;padding:32px;text-align:center;
+}
+#blocked-overlay.show{display:flex}
+#blocked-icon{font-size:3rem}
+#blocked-title{font-size:1rem;font-weight:700;color:var(--text)}
+#blocked-msg{font-size:0.75rem;color:var(--muted);line-height:1.6;max-width:320px}
+#blocked-open-btn{
+  padding:12px 24px;background:var(--accent);color:#000;
+  border:none;border-radius:6px;font-size:0.8rem;font-weight:700;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  font-family:monospace;letter-spacing:0.04em;text-transform:uppercase;
+}
+
+/* ── LOADING ── */
+#loading{
+  display:none;position:absolute;inset:0;
+  background:var(--bg);z-index:40;
+  align-items:center;justify-content:center;flex-direction:column;gap:12px;
+}
+#loading.show{display:flex}
+#loading-text{font-size:0.75rem;color:var(--muted);font-family:monospace}
+.spinner{
+  width:32px;height:32px;border:3px solid var(--border2);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── ZOOM HINT ── */
+#zoom-hint{
+  position:absolute;bottom:calc(20px + var(--safe-b));left:50%;
+  transform:translateX(-50%);
+  background:#000000cc;color:var(--text);
+  font-size:0.65rem;padding:7px 14px;border-radius:20px;
+  font-family:monospace;pointer-events:none;opacity:0;
+  transition:opacity 0.3s;white-space:nowrap;z-index:60;
+}
+#zoom-hint.show{opacity:1}
+
+/* ── FAB ── */
+#fab{
+  position:absolute;right:14px;bottom:calc(20px + var(--safe-b));
+  display:flex;flex-direction:column;gap:8px;z-index:60;
+}
+.fab-btn{
+  width:44px;height:44px;border-radius:50%;
+  background:var(--panel);border:1px solid var(--border2);
+  color:var(--text);font-size:1.1rem;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  box-shadow:0 2px 12px rgba(0,0,0,0.5);
+  transition:border-color 0.1s;
+}
+.fab-btn:active{border-color:var(--accent);color:var(--accent)}
+
+/* ── CSS INJECTION PANEL ── */
+#css-panel{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--panel);border-top:1px solid var(--border2);
+  padding:12px;z-index:70;display:none;
+  padding-bottom:calc(12px + var(--safe-b));
+}
+#css-panel.show{display:block}
+#css-panel textarea{
+  width:100%;height:80px;background:var(--bg);
+  border:1px solid var(--border2);color:var(--text);
+  font-size:0.65rem;padding:8px;resize:none;outline:none;
+  font-family:monospace;border-radius:4px;
+  -webkit-user-select:text;user-select:text;
+}
+#css-panel textarea:focus{border-color:var(--accent)}
+#css-panel-btns{display:flex;gap:8px;margin-top:8px}
+#css-panel-btns button{
+  flex:1;padding:8px;border:1px solid var(--border2);
+  background:transparent;color:var(--text);font-size:0.65rem;
+  font-family:monospace;cursor:pointer;border-radius:4px;
+  -webkit-tap-highlight-color:transparent;
+}
+#css-panel-btns .apply-css{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:calc(70px + var(--safe-b));left:50%;
+  transform:translateX(-50%) translateY(60px);
+  background:var(--accent);color:#000;
+  font-size:0.7rem;font-weight:600;padding:8px 16px;border-radius:4px;
+  transition:transform 0.3s cubic-bezier(.34,1.56,.64,1);
+  z-index:9999;pointer-events:none;white-space:nowrap;font-family:monospace;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<div id="toolbar">
+  <span id="site-logo">⬡ TV</span>
+  <div class="tb-sep"></div>
+  <div id="url-bar-wrap">
+    <input type="url" id="url-input" value="https://www.topview.ai" placeholder="https://…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button id="go-btn" onclick="navigate()">Go</button>
+  </div>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="reloadFrame()" title="Reload">↺</button>
+  <button class="tb-btn" onclick="setScale(1)" title="Fit">Fit</button>
+  <button class="tb-btn" onclick="setScale(viewScale*1.25)">+</button>
+  <button class="tb-btn" onclick="setScale(viewScale*0.8)">−</button>
+  <span id="zoom-label">100%</span>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="toggleCSSPanel()">CSS ✎</button>
+</div>
+
+<!-- FRAME WRAP -->
+<div id="frame-wrap">
+
+  <!-- Loading -->
+  <div id="loading" class="show">
+    <div class="spinner"></div>
+    <div id="loading-text">Loading Topview…</div>
+  </div>
+
+  <!-- Blocked overlay -->
+  <div id="blocked-overlay">
+    <div id="blocked-icon">🚫</div>
+    <div id="blocked-title">Site blocked iframe</div>
+    <div id="blocked-msg">
+      <strong>topview.ai</strong> uses security headers that prevent loading inside another page — this is very common on modern web apps.<br><br>
+      You can still open it directly in Safari with the desktop layout scaled for mobile, or try a different URL.
+    </div>
+    <button id="blocked-open-btn" onclick="openExternal()">Open in Safari ↗</button>
+  </div>
+
+  <!-- The iframe -->
+  <iframe id="site-frame"
+    src="about:blank"
+    allow="camera; microphone; clipboard-read; clipboard-write; payment"
+    sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-downloads"
+  ></iframe>
+
+  <!-- Zoom hint -->
+  <div id="zoom-hint">Pinch to zoom · Drag to pan</div>
+
+  <!-- FAB -->
+  <div id="fab">
+    <div class="fab-btn" onclick="setScale(1)" title="Fit to screen">⊡</div>
+    <div class="fab-btn" onclick="setScale(viewScale*1.3)" title="Zoom in">+</div>
+    <div class="fab-btn" onclick="setScale(viewScale*0.77)" title="Zoom out">−</div>
+  </div>
+
+  <!-- CSS injection panel -->
+  <div id="css-panel">
+    <div style="font-size:0.65rem;color:var(--muted);font-family:monospace;margin-bottom:6px">
+      Inject CSS into frame (works only if site loaded without blocking):
+    </div>
+    <textarea id="css-input" placeholder="/* e.g. body { zoom: 150%; } */
+.sidebar { display: none !important; }
+button { min-height: 44px !important; }"></textarea>
+    <div id="css-panel-btns">
+      <button onclick="toggleCSSPanel()">Cancel</button>
+      <button class="apply-css" onclick="applyCSS()">Apply CSS</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+const frame     = document.getElementById('site-frame');
+const frameWrap = document.getElementById('frame-wrap');
+const urlInput  = document.getElementById('url-input');
+const zoomLabel = document.getElementById('zoom-label');
+
+const DESKTOP_W = 1280; // iframe pretends to be this wide
+let viewScale   = 1;
+let panX = 0, panY = 0;
+let currentURL  = 'https://www.topview.ai';
+let blocked     = false;
+let touchState  = null;
+let loadTimer   = null;
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATE
+// ═══════════════════════════════════════════════════════════
+function navigate() {
+  let url = urlInput.value.trim();
+  if (!url) return;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  urlInput.value = url;
+  currentURL = url;
+  blocked = false;
+  document.getElementById('blocked-overlay').classList.remove('show');
+  showLoading(true);
+  frame.src = url;
+  startBlockDetect();
+}
+
+function reloadFrame() {
+  showLoading(true);
+  frame.src = frame.src;
+  startBlockDetect();
+}
+
+function openExternal() {
+  window.open(currentURL, '_blank');
+}
+
+// ── Detect if iframe was blocked ──
+// If onload fires but we can't access contentDocument → blocked
+function startBlockDetect() {
+  clearTimeout(loadTimer);
+  // Give it 6 seconds max
+  loadTimer = setTimeout(() => {
+    try {
+      const doc = frame.contentDocument || frame.contentWindow.document;
+      if (!doc || doc.URL === 'about:blank' || doc.body === null) showBlocked();
+    } catch(e) {
+      // Cross-origin — means it DID load (cross-origin means real content)
+      // This is actually good — site loaded, just can't inject
+      showLoading(false);
+    }
+  }, 6000);
+}
+
+frame.addEventListener('load', () => {
+  clearTimeout(loadTimer);
+  showLoading(false);
+  try {
+    const doc = frame.contentDocument || frame.contentWindow.document;
+    // If we can read the doc and it's blank/error → blocked
+    if (doc.URL === 'about:blank') return;
+    const body = doc.body;
+    if (!body || body.innerHTML.trim() === '') {
+      showBlocked();
+      return;
+    }
+    // Inject mobile-friendliness CSS
+    injectDefaultCSS(doc);
+    toast('Loaded ✓ — pinch to zoom, drag to pan');
+    showHint();
+  } catch(e) {
+    // Cross-origin error = site actually loaded! Can't inject CSS though.
+    toast('Loaded (cross-origin) — pinch & pan to navigate');
+    showHint();
+  }
+});
+
+frame.addEventListener('error', () => {
+  clearTimeout(loadTimer);
+  showLoading(false);
+  showBlocked();
+});
+
+function showLoading(on) {
+  document.getElementById('loading').classList.toggle('show', on);
+  document.getElementById('loading-text').textContent = 'Loading ' + (currentURL.replace(/https?:\/\//,'').split('/')[0]) + '…';
+}
+
+function showBlocked() {
+  showLoading(false);
+  blocked = true;
+  document.getElementById('blocked-overlay').classList.add('show');
+}
+
+// ── Default CSS injection (same-origin only) ──
+function injectDefaultCSS(doc) {
+  try {
+    const style = doc.createElement('style');
+    style.id = '__mobile-wrapper-css';
+    style.textContent = `
+      /* Bigger tap targets */
+      button, [role="button"], a, input, select, textarea {
+        min-height: 40px !important;
+      }
+      /* Prevent text too small */
+      body { font-size: 15px !important; }
+      /* Remove fixed sidebars that break layout */
+      /* Add your site-specific CSS below */
+    `;
+    (doc.head || doc.body).appendChild(style);
+  } catch(e) {}
+}
+
+function applyCSS() {
+  const css = document.getElementById('css-input').value.trim();
+  if (!css) return;
+  try {
+    const doc = frame.contentDocument || frame.contentWindow.document;
+    let el = doc.getElementById('__injected-css');
+    if (!el) { el = doc.createElement('style'); el.id='__injected-css'; (doc.head||doc.body).appendChild(el); }
+    el.textContent = css;
+    toast('CSS applied ✓');
+    toggleCSSPanel();
+  } catch(e) {
+    toast('Cannot inject — cross-origin site');
+  }
+}
+
+function toggleCSSPanel() {
+  document.getElementById('css-panel').classList.toggle('show');
+}
+
+// ═══════════════════════════════════════════════════════════
+// VIEWPORT — fit iframe to screen with pan + pinch
+// ═══════════════════════════════════════════════════════════
+function applyTransform() {
+  frame.style.transform = `translate(${panX}px,${panY}px) scale(${viewScale})`;
+  zoomLabel.textContent = Math.round(viewScale * 100) + '%';
+}
+
+function setScale(scale, cx, cy) {
+  const wrapW = frameWrap.clientWidth;
+  const wrapH = frameWrap.clientHeight;
+  const ns = Math.max(0.1, Math.min(5, scale));
+  if (cx !== undefined) {
+    const r = ns / viewScale;
+    panX = cx - r * (cx - panX);
+    panY = cy - r * (cy - panY);
+  }
+  viewScale = ns;
+  // Clamp pan so we don't lose the frame entirely
+  clampPan();
+  applyTransform();
+}
+
+function clampPan() {
+  const frameW = DESKTOP_W * viewScale;
+  const frameH = 900 * viewScale;
+  const wrapW  = frameWrap.clientWidth;
+  const wrapH  = frameWrap.clientHeight;
+  // Allow scrolling through the full frame
+  panX = Math.min(0, Math.max(wrapW - frameW, panX));
+  panY = Math.min(40, Math.max(wrapH - frameH, panY));
+}
+
+function fitToScreen() {
+  const wrapW = frameWrap.clientWidth;
+  const wrapH = frameWrap.clientHeight;
+  viewScale = Math.min(wrapW / DESKTOP_W, wrapH / 900);
+  panX = 0; panY = 0;
+  applyTransform();
+}
+
+// Initial fit
+window.addEventListener('resize', fitToScreen);
+
+// ═══════════════════════════════════════════════════════════
+// TOUCH: pinch-zoom + pan
+// ═══════════════════════════════════════════════════════════
+frameWrap.addEventListener('touchstart', e => {
+  if (document.getElementById('css-panel').classList.contains('show')) return;
+  if (e.touches.length === 1) {
+    touchState = { type:'pan', sx:e.touches[0].clientX, sy:e.touches[0].clientY, px:panX, py:panY };
+  } else if (e.touches.length === 2) {
+    const t0=e.touches[0], t1=e.touches[1];
+    const dist = Math.hypot(t1.clientX-t0.clientX, t1.clientY-t0.clientY);
+    const rect  = frameWrap.getBoundingClientRect();
+    const mx = (t0.clientX+t1.clientX)/2 - rect.left;
+    const my = (t0.clientY+t1.clientY)/2 - rect.top;
+    touchState = { type:'pinch', dist0:dist, scale0:viewScale, mx, my, px:panX, py:panY };
+  }
+  e.preventDefault();
+}, { passive:false });
+
+frameWrap.addEventListener('touchmove', e => {
+  if (!touchState) return;
+  e.preventDefault();
+  if (touchState.type==='pan' && e.touches.length===1) {
+    panX = touchState.px + (e.touches[0].clientX - touchState.sx);
+    panY = touchState.py + (e.touches[0].clientY - touchState.sy);
+    clampPan();
+    applyTransform();
+  } else if (touchState.type==='pinch' && e.touches.length===2) {
+    const t0=e.touches[0], t1=e.touches[1];
+    const dist = Math.hypot(t1.clientX-t0.clientX, t1.clientY-t0.clientY);
+    const ns = Math.max(0.1, Math.min(5, touchState.scale0 * dist/touchState.dist0));
+    const r  = ns/viewScale;
+    panX = touchState.mx - r*(touchState.mx - touchState.px);
+    panY = touchState.my - r*(touchState.my - touchState.py);
+    viewScale = ns;
+    clampPan();
+    applyTransform();
+    zoomLabel.textContent = Math.round(viewScale*100)+'%';
+  }
+}, { passive:false });
+
+frameWrap.addEventListener('touchend', e => {
+  if (e.touches.length === 0) touchState = null;
+}, { passive:true });
+
+// Mouse wheel zoom (desktop)
+frameWrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = frameWrap.getBoundingClientRect();
+  setScale(viewScale * (e.deltaY > 0 ? 0.9 : 1.1), e.clientX - rect.left, e.clientY - rect.top);
+}, { passive:false });
+
+// ── Enter key on URL bar ──
+urlInput.addEventListener('keydown', e => { if (e.key==='Enter') { urlInput.blur(); navigate(); } });
+
+// ═══════════════════════════════════════════════════════════
+// HINT
+// ═══════════════════════════════════════════════════════════
+function showHint() {
+  const h = document.getElementById('zoom-hint');
+  h.classList.add('show');
+  setTimeout(() => h.classList.remove('show'), 3500);
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ═══════════════════════════════════════════════════════════
+// PWA
+// ═══════════════════════════════════════════════════════════
+(function initPWA() {
+  const iconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+    <rect width="512" height="512" fill="#0a0a0c"/>
+    <rect x="60" y="60" width="392" height="392" rx="40" fill="none" stroke="#e8ff47" stroke-width="20"/>
+    <text x="256" y="300" text-anchor="middle" font-family="monospace" font-size="160" font-weight="bold" fill="#e8ff47">TV</text>
+  </svg>`;
+  const iconURL = 'data:image/svg+xml;base64,' + btoa(iconSVG);
+  document.getElementById('apple-icon').href = iconURL;
+  const manifest = { name:'Topview Mobile', short_name:'Topview', start_url:'.', display:'standalone',
+    orientation:'portrait', background_color:'#0a0a0c', theme_color:'#0a0a0c',
+    icons:[{src:iconURL, sizes:'512x512', type:'image/svg+xml', purpose:'any maskable'}] };
+  document.getElementById('pwa-manifest').href = URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'}));
+  if ('serviceWorker' in navigator) {
+    const sw = `const C='tv-wrap-v1';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll([self.location.href])));self.skipWaiting();});self.addEventListener('activate',e=>e.waitUntil(clients.claim()));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+    navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})),{scope:'./'}).catch(()=>{});
+  }
+  if (/iphone|ipad|ipod/i.test(navigator.userAgent) && window.matchMedia('(display-mode:browser)').matches && !sessionStorage.getItem('ph')) {
+    sessionStorage.setItem('ph','1');
+    setTimeout(() => toast('Tap Share ⎋ → Add to Home Screen'), 3000);
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════
+// BOOT — load Topview immediately
+// ═══════════════════════════════════════════════════════════
+(function boot() {
+  // Size iframe like a desktop browser
+  frame.style.width  = DESKTOP_W + 'px';
+  frame.style.height = '900px';
+  // Fit to screen initially
+  setTimeout(() => {
+    fitToScreen();
+    navigate();
+  }, 100);
+})();
+</script>
+</body>
+</html>
