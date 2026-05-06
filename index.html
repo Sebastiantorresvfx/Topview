@@ -3,136 +3,148 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Mobile Fixer — Bookmarklet</title>
+<title>Topview Launcher</title>
 <meta name="theme-color" content="#0a0a0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="MobileFixer">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Topview">
+<link rel="manifest" id="pwa-manifest" href="">
+<link rel="apple-touch-icon" id="apple-icon" href="">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#0a0a0c;--panel:#111114;--border:#222228;--border2:#2e2e38;
   --accent:#e8ff47;--text:#dddde8;--muted:#5a5a6e;
-  --safe-t:env(safe-area-inset-top,0px);
-  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);
 }
-body{
-  background:var(--bg);color:var(--text);
-  font-family:'SF Pro Display',-apple-system,monospace;
-  min-height:100vh;padding:calc(20px + var(--safe-t)) 20px calc(20px + var(--safe-b));
-  line-height:1.6;
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,monospace;}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:calc(24px + var(--safe-t)) 24px calc(24px + var(--safe-b));text-align:center;}
+.logo{font-size:3.5rem;margin-bottom:14px}
+h1{font-family:monospace;font-size:1rem;font-weight:700;color:var(--accent);letter-spacing:0.08em;margin-bottom:6px}
+.sub{font-size:0.75rem;color:var(--muted);margin-bottom:36px;line-height:1.6}
+#launch-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  width:100%;max-width:300px;padding:22px 20px;
+  background:var(--accent);color:#000;border:none;border-radius:16px;
+  font-family:monospace;font-size:1rem;font-weight:700;letter-spacing:0.04em;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  box-shadow:0 0 40px rgba(232,255,71,0.2);transition:transform 0.1s;
 }
-h1{font-size:1.3rem;color:var(--accent);margin-bottom:6px;font-family:monospace;letter-spacing:0.04em}
-.sub{font-size:0.75rem;color:var(--muted);margin-bottom:28px}
-.step{
-  background:var(--panel);border:1px solid var(--border2);
-  border-radius:10px;padding:18px;margin-bottom:14px;
+#launch-btn:active{transform:scale(0.97)}
+.btn-sub{font-size:0.62rem;font-weight:400;opacity:0.55;letter-spacing:0.02em}
+#status{
+  margin-top:18px;font-size:0.65rem;font-family:monospace;color:var(--muted);
+  padding:6px 14px;border:1px solid var(--border2);border-radius:20px;
+  transition:color 0.2s,border-color 0.2s;
 }
-.step-num{
-  font-size:0.6rem;font-family:monospace;color:var(--accent);
-  letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;
-}
-.step p{font-size:0.85rem;color:var(--text);margin-bottom:10px;line-height:1.5}
-.step small{font-size:0.72rem;color:var(--muted);display:block;margin-top:6px}
-
-/* The draggable bookmarklet link */
-#bookmarklet-link{
-  display:block;
-  background:var(--accent);color:#000;
-  text-align:center;padding:16px;border-radius:8px;
-  font-family:monospace;font-size:0.9rem;font-weight:700;
-  letter-spacing:0.04em;text-decoration:none;
-  margin:12px 0;-webkit-tap-highlight-color:transparent;
-  word-break:break-all;
-}
-#bookmarklet-link:active{opacity:0.8}
-
-.manual-url{
-  background:var(--bg);border:1px solid var(--border2);border-radius:6px;
-  padding:10px;font-family:monospace;font-size:0.65rem;color:var(--muted);
-  word-break:break-all;margin-top:8px;
-  -webkit-user-select:all;user-select:all;
-}
-
-.copy-btn{
-  display:block;width:100%;margin-top:8px;
-  padding:10px;background:transparent;border:1px solid var(--border2);
-  color:var(--text);font-family:monospace;font-size:0.72rem;
-  border-radius:6px;cursor:pointer;text-align:center;
-  -webkit-tap-highlight-color:transparent;
-}
-.copy-btn:active{border-color:var(--accent);color:var(--accent)}
-
-.works-on{
-  margin-top:20px;padding:14px;background:var(--panel);
-  border:1px solid var(--border2);border-radius:10px;
-}
-.works-on h3{font-size:0.7rem;color:var(--muted);font-family:monospace;
-  text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
-.works-on ul{list-style:none;font-size:0.8rem;color:var(--text)}
-.works-on ul li{padding:4px 0;display:flex;align-items:center;gap:8px}
-.works-on ul li::before{content:'✓';color:var(--accent);font-weight:700}
+#status.ok{color:var(--accent);border-color:#e8ff4744}
+.steps{margin-top:28px;width:100%;max-width:300px;background:var(--panel);
+  border:1px solid var(--border2);border-radius:12px;padding:16px;text-align:left;}
+.steps h3{font-size:0.58rem;color:var(--muted);font-family:monospace;letter-spacing:0.1em;
+  text-transform:uppercase;margin-bottom:12px}
+.sr{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px}
+.sr:last-child{margin-bottom:0}
+.sn{width:20px;height:20px;border-radius:50%;background:var(--border2);color:var(--muted);
+  font-size:0.6rem;font-family:monospace;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.st{font-size:0.72rem;color:var(--text);line-height:1.45}
+.st em{color:var(--accent);font-style:normal;font-family:monospace}
+#fallback{display:none;margin-top:18px;width:100%;max-width:300px;
+  background:var(--panel);border:1px solid var(--border2);border-radius:12px;padding:14px;}
+#fallback p{font-size:0.7rem;color:var(--muted);margin-bottom:8px;line-height:1.5}
+#fallback textarea{width:100%;height:54px;background:var(--bg);border:1px solid var(--border2);
+  color:var(--text);font-size:0.52rem;padding:7px;font-family:monospace;
+  border-radius:6px;resize:none;-webkit-user-select:all;user-select:all;outline:none;}
+#copy-btn{width:100%;margin-top:7px;padding:9px;background:var(--accent);color:#000;
+  border:none;border-radius:6px;font-family:monospace;font-size:0.72rem;font-weight:700;cursor:pointer;}
 </style>
 </head>
 <body>
+<div class="logo">⬡</div>
+<h1>Topview Launcher</h1>
+<p class="sub">Tap below — script copies automatically<br>then Topview opens ready to fix</p>
 
-<h1>⬡ Mobile Fixer</h1>
-<p class="sub">A bookmarklet that fixes any desktop website on your iPhone</p>
+<button id="launch-btn" onclick="launch()">
+  <span>Launch Topview</span>
+  <span class="btn-sub">Mobile Fixer activates automatically</span>
+</button>
 
-<div class="step">
-  <div class="step-num">Step 1 — Add the bookmarklet</div>
-  <p>On iPhone: Bookmark any page first, then <strong>edit that bookmark</strong> and replace the URL with the code below.</p>
-  <p>On desktop Safari/Chrome: <strong>drag the button below</strong> to your bookmarks bar.</p>
-  <a id="bookmarklet-link" href="javascript:(function()%7B%20var%20existing%20%3D%20document.getElementById('__mv-panel')%3B%20if(existing)%7B%20existing.remove()%3B%20return%3B%20%7D%20var%20vp%20%3D%20document.querySelector('meta%5Bname%3Dviewport%5D')%3B%20if(!vp)%7B%20vp%20%3D%20document.createElement('meta')%3B%20vp.name%3D'viewport'%3B%20document.head.appendChild(vp)%3B%20%7D%20vp.content%20%3D%20'width%3Ddevice-width%2C%20initial-scale%3D1%2C%20maximum-scale%3D5%2C%20user-scalable%3Dyes'%3B%20var%20style%20%3D%20document.createElement('style')%3B%20style.id%20%3D%20'__mv-style'%3B%20style.textContent%20%3D%20%5B%20'*%20%7B%20-webkit-text-size-adjust%3A%20100%25%20!important%3B%20%7D'%2C%20'body%20%7B%20overflow-x%3A%20hidden%20!important%3B%20min-width%3A%20unset%20!important%3B%20width%3A%20100%25%20!important%3B%20%7D'%2C%20'button%2C%20%5Brole%3Dbutton%5D%2C%20a%2C%20input%5Btype%3Dbutton%5D%2C%20input%5Btype%3Dsubmit%5D%20%7B'%2C%20'%20min-height%3A%2044px%20!important%3B%20min-width%3A%2044px%20!important%3B'%2C%20'%20padding%3A%208px%2012px%20!important%3B%20font-size%3A%2015px%20!important%3B'%2C%20'%7D'%2C%20'input%3Anot(%5Btype%3Dhidden%5D)%2C%20select%2C%20textarea%20%7B'%2C%20'%20min-height%3A%2044px%20!important%3B%20font-size%3A%2016px%20!important%3B'%2C%20'%20border-radius%3A%206px%20!important%3B'%2C%20'%7D'%2C%20'%23__mv-panel%20%7B%20all%3A%20initial%20!important%3B%20%7D'%2C%20%5D.join('%20')%3B%20document.head.appendChild(style)%3B%20var%20panel%20%3D%20document.createElement('div')%3B%20panel.id%20%3D%20'__mv-panel'%3B%20var%20z%20%3D%202147483647%3B%20panel.style.cssText%20%3D%20%5B%20'position%3Afixed'%2C'bottom%3A80px'%2C'right%3A14px'%2C'z-index%3A'%2Bz%2C%20'background%3A%230a0a0c'%2C'border%3A1px%20solid%20%232e2e38'%2C'border-radius%3A12px'%2C%20'padding%3A10px%208px'%2C'display%3Aflex'%2C'flex-direction%3Acolumn'%2C'gap%3A7px'%2C%20'box-shadow%3A0%204px%2024px%20rgba(0%2C0%2C0%2C0.7)'%2C'font-family%3Amonospace'%2C%20'width%3A52px'%2C'align-items%3Acenter'%2C%20%5D.join('%3B')%3B%20var%20scale%20%3D%201.0%3B%20var%20body%20%3D%20document.body%3B%20var%20html%20%3D%20document.documentElement%3B%20function%20btn(label%2C%20title%2C%20fn)%7B%20var%20b%20%3D%20document.createElement('button')%3B%20b.textContent%20%3D%20label%3B%20b.title%20%3D%20title%3B%20b.style.cssText%20%3D%20%5B%20'all%3Aunset'%2C'display%3Aflex'%2C'align-items%3Acenter'%2C'justify-content%3Acenter'%2C%20'width%3A38px'%2C'height%3A38px'%2C'border-radius%3A8px'%2C%20'background%3A%2318181c'%2C'border%3A1px%20solid%20%232e2e38'%2C%20'color%3A%23dddde8'%2C'font-size%3A1rem'%2C'cursor%3Apointer'%2C%20'font-family%3Amonospace'%2C'-webkit-tap-highlight-color%3Atransparent'%2C%20%5D.join('%3B')%3B%20b.addEventListener('click'%2C%20fn)%3B%20b.addEventListener('touchend'%2C%20function(e)%7B%20e.stopPropagation()%3B%20e.preventDefault()%3B%20fn()%3B%20%7D)%3B%20return%20b%3B%20%7D%20function%20applyZoom()%7B%20html.style.setProperty('zoom'%2C%20scale%2C%20'important')%3B%20html.style.setProperty('-webkit-transform'%2C%20'scale('%2Bscale%2B')'%2C%20'important')%3B%20html.style.setProperty('-webkit-transform-origin'%2C%20'top%20left'%2C%20'important')%3B%20html.style.setProperty('width'%2C%20(100%2Fscale)%2B'%25'%2C%20'important')%3B%20lbl.textContent%20%3D%20Math.round(scale*100)%2B'%25'%3B%20%7D%20var%20lbl%20%3D%20document.createElement('div')%3B%20lbl.style.cssText%20%3D%20'color%3A%23c8f53c%3Bfont-size%3A0.55rem%3Bfont-family%3Amonospace%3Btext-align%3Acenter%3Bline-height%3A1'%3B%20lbl.textContent%20%3D%20'100%25'%3B%20panel.appendChild(btn('%2B'%2C'Zoom%20in'%2C%20function()%7B%20scale%3DMath.min(2.5%2Cscale%2B0.1)%3B%20applyZoom()%3B%20%7D))%3B%20panel.appendChild(btn('%E2%88%92'%2C'Zoom%20out'%2C%20function()%7B%20scale%3DMath.max(0.3%2Cscale-0.1)%3B%20applyZoom()%3B%20%7D))%3B%20panel.appendChild(btn('1%3A1'%2C'Reset%20zoom'%2C%20function()%7B%20scale%3D1.0%3B%20applyZoom()%3B%20%7D))%3B%20panel.appendChild(lbl)%3B%20var%20sep%20%3D%20document.createElement('div')%3B%20sep.style.cssText%20%3D%20'width%3A30px%3Bheight%3A1px%3Bbackground%3A%232e2e38'%3B%20panel.appendChild(sep)%3B%20panel.appendChild(btn('%E2%9F%B7'%2C'Fit%20width'%2C%20function()%7B%20var%20sw%20%3D%20window.screen.width%3B%20var%20bw%20%3D%20document.body.scrollWidth%20%7C%7C%20document.documentElement.scrollWidth%3B%20if(bw%20%3E%20sw)%7B%20scale%20%3D%20sw%2Fbw%3B%20applyZoom()%3B%20%7D%20else%20%7B%20scale%3D1%3B%20applyZoom()%3B%20%7D%20%7D))%3B%20var%20fixedHidden%20%3D%20false%3B%20panel.appendChild(btn('%E2%96%A4'%2C'Toggle%20fixed%20bars'%2C%20function()%7B%20fixedHidden%20%3D%20!fixedHidden%3B%20var%20els%20%3D%20document.querySelectorAll('*')%3B%20for(var%20i%3D0%3Bi%3Cels.length%3Bi%2B%2B)%7B%20var%20cs%20%3D%20window.getComputedStyle(els%5Bi%5D)%3B%20if(cs.position%3D%3D%3D'fixed'%20%7C%7C%20cs.position%3D%3D%3D'sticky')%7B%20if(els%5Bi%5D.id%20!%3D%3D%20'__mv-panel')%7B%20els%5Bi%5D.style.setProperty('display'%2C%20fixedHidden%3F'none'%3A''%2C%20'important')%3B%20%7D%20%7D%20%7D%20%7D))%3B%20panel.appendChild(btn('%E2%86%91'%2C'Scroll%20to%20top'%2C%20function()%7B%20window.scrollTo(%7Btop%3A0%2Cbehavior%3A'smooth'%7D)%3B%20%7D))%3B%20panel.appendChild(btn('%E2%9C%95'%2C'Remove%20panel'%2C%20function()%7B%20panel.remove()%3B%20document.getElementById('__mv-style')%20%26%26%20document.getElementById('__mv-style').remove()%3B%20html.style.removeProperty('zoom')%3B%20html.style.removeProperty('-webkit-transform')%3B%20html.style.removeProperty('-webkit-transform-origin')%3B%20html.style.removeProperty('width')%3B%20%7D))%3B%20document.body.appendChild(panel)%3B%20setTimeout(function()%7B%20var%20bw%20%3D%20Math.max(document.body.scrollWidth%2C%20document.documentElement.scrollWidth)%3B%20var%20sw%20%3D%20window.innerWidth%3B%20if(bw%20%3E%20sw%20*%201.1)%7B%20scale%20%3D%20sw%2Fbw%3B%20applyZoom()%3B%20%7D%20%7D%2C%20500)%3B%20%7D)()%3B">⬡ Mobile Fixer — drag me to bookmarks</a>
-  <small>Or copy the code manually and paste it as a bookmark URL:</small>
-  <div class="manual-url" id="bm-code">javascript:(function()%7B%20var%20existing%20%3D%20document.getElementById('__mv-panel')%3B%20if(existing)%7B%20existing.remove()%3B%20return%3B%20%7D%20var%20vp%20%3D%20document.querySelector('meta%5Bname%3Dviewport%5D')%3B%20if(!vp)%7B%20vp%20%3D%20document.createElement('meta')%3B%20vp.name%3D'viewport'%3B%20document.head.appendChild(vp)%3B%20%7D%20vp.content%20%3D%20'width%3Ddevice-width%2C%20initial-scale%3D1%2C%20maximum-scale%3D5%2C%20user-scalable%3Dyes'%3B%20var%20style%20%3D%20document.createElement('style')%3B%20style.id%20%3D%20'__mv-style'%3B%20style.textContent%20%3D%20%5B%20'*%20%7B%20-webkit-text-size-adjust%3A%20100%25%20!important%3B%20%7D'%2C%20'body%20%7B%20overflow-x%3A%20hidden%20!important%3B%20min-width%3A%20unset%20!important%3B%20width%3A%20100%25%20!important%3B%20%7D'%2C%20'button%2C%20%5Brole%3Dbutton%5D%2C%20a%2C%20input%5Btype%3Dbutton%5D%2C%20input%5Btype%3Dsubmit%5D%20%7B'%2C%20'%20min-height%3A%2044px%20!important%3B%20min-width%3A%2044px%20!important%3B'%2C%20'%20padding%3A%208px%2012px%20!important%3B%20font-size%3A%2015px%20!important%3B'%2C%20'%7D'%2C%20'input%3Anot(%5Btype%3Dhidden%5D)%2C%20select%2C%20textarea%20%7B'%2C%20'%20min-height%3A%2044px%20!important%3B%20font-size%3A%2016px%20!important%3B'%2C%20'%20border-radius%3A%206px%20!important%3B'%2C%20'%7D'%2C%20'%23__mv-panel%20%7B%20all%3A%20initial%20!important%3B%20%7D'%2C%20%5D.join('%20')%3B%20document.head.appendChild(style)%3B%20var%20panel%20%3D%20document.createElement('div')%3B%20panel.id%20%3D%20'__mv-panel'%3B%20var%20z%20%3D%202147483647%3B%20panel.style.cssText%20%3D%20%5B%20'position%3Afixed'%2C'bottom%3A80px'%2C'right%3A14px'%2C'z-index%3A'%2Bz%2C%20'background%3A%230a0a0c'%2C'border%3A1px%20solid%20%232e2e38'%2C'border-radius%3A12px'%2C%20'padding%3A10px%208px'%2C'display%3Aflex'%2C'flex-direction%3Acolumn'%2C'gap%3A7px'%2C%20'box-shadow%3A0%204px%2024px%20rgba(0%2C0%2C0%2C0.7)'%2C'font-family%3Amonospace'%2C%20'width%3A52px'%2C'align-items%3Acenter'%2C%20%5D.join('%3B')%3B%20var%20scale%20%3D%201.0%3B%20var%20body%20%3D%20document.body%3B%20var%20html%20%3D%20document.documentElement%3B%20function%20btn(label%2C%20title%2C%20fn)%7B%20var%20b%20%3D%20document.createElement('button')%3B%20b.textContent%20%3D%20label%3B%20b.title%20%3D%20title%3B%20b.style.cssText%20%3D%20%5B%20'all%3Aunset'%2C'display%3Aflex'%2C'align-items%3Acenter'%2C'justify-content%3Acenter'%2C%20'width%3A38px'%2C'height%3A38px'%2C'border-radius%3A8px'%2C%20'background%3A%2318181c'%2C'border%3A1px%20solid%20%232e2e38'%2C%20'color%3A%23dddde8'%2C'font-size%3A1rem'%2C'cursor%3Apointer'%2C%20'font-family%3Amonospace'%2C'-webkit-tap-highlight-color%3Atransparent'%2C%20%5D.join('%3B')%3B%20b.addEventListener('click'%2C%20fn)%3B%20b.addEventListener('touchend'%2C%20function(e)%7B%20e.stopPropagation()%3B%20e.preventDefault()%3B%20fn()%3B%20%7D)%3B%20return%20b%3B%20%7D%20function%20applyZoom()%7B%20html.style.setProperty('zoom'%2C%20scale%2C%20'important')%3B%20html.style.setProperty('-webkit-transform'%2C%20'scale('%2Bscale%2B')'%2C%20'important')%3B%20html.style.setProperty('-webkit-transform-origin'%2C%20'top%20left'%2C%20'important')%3B%20html.style.setProperty('width'%2C%20(100%2Fscale)%2B'%25'%2C%20'important')%3B%20lbl.textContent%20%3D%20Math.round(scale*100)%2B'%25'%3B%20%7D%20var%20lbl%20%3D%20document.createElement('div')%3B%20lbl.style.cssText%20%3D%20'color%3A%23c8f53c%3Bfont-size%3A0.55rem%3Bfont-family%3Amonospace%3Btext-align%3Acenter%3Bline-height%3A1'%3B%20lbl.textContent%20%3D%20'100%25'%3B%20panel.appendChild(btn('%2B'%2C'Zoom%20in'%2C%20function()%7B%20scale%3DMath.min(2.5%2Cscale%2B0.1)%3B%20applyZoom()%3B%20%7D))%3B%20panel.appendChild(btn('%E2%88%92'%2C'Zoom%20out'%2C%20function()%7B%20scale%3DMath.max(0.3%2Cscale-0.1)%3B%20applyZoom()%3B%20%7D))%3B%20panel.appendChild(btn('1%3A1'%2C'Reset%20zoom'%2C%20function()%7B%20scale%3D1.0%3B%20applyZoom()%3B%20%7D))%3B%20panel.appendChild(lbl)%3B%20var%20sep%20%3D%20document.createElement('div')%3B%20sep.style.cssText%20%3D%20'width%3A30px%3Bheight%3A1px%3Bbackground%3A%232e2e38'%3B%20panel.appendChild(sep)%3B%20panel.appendChild(btn('%E2%9F%B7'%2C'Fit%20width'%2C%20function()%7B%20var%20sw%20%3D%20window.screen.width%3B%20var%20bw%20%3D%20document.body.scrollWidth%20%7C%7C%20document.documentElement.scrollWidth%3B%20if(bw%20%3E%20sw)%7B%20scale%20%3D%20sw%2Fbw%3B%20applyZoom()%3B%20%7D%20else%20%7B%20scale%3D1%3B%20applyZoom()%3B%20%7D%20%7D))%3B%20var%20fixedHidden%20%3D%20false%3B%20panel.appendChild(btn('%E2%96%A4'%2C'Toggle%20fixed%20bars'%2C%20function()%7B%20fixedHidden%20%3D%20!fixedHidden%3B%20var%20els%20%3D%20document.querySelectorAll('*')%3B%20for(var%20i%3D0%3Bi%3Cels.length%3Bi%2B%2B)%7B%20var%20cs%20%3D%20window.getComputedStyle(els%5Bi%5D)%3B%20if(cs.position%3D%3D%3D'fixed'%20%7C%7C%20cs.position%3D%3D%3D'sticky')%7B%20if(els%5Bi%5D.id%20!%3D%3D%20'__mv-panel')%7B%20els%5Bi%5D.style.setProperty('display'%2C%20fixedHidden%3F'none'%3A''%2C%20'important')%3B%20%7D%20%7D%20%7D%20%7D))%3B%20panel.appendChild(btn('%E2%86%91'%2C'Scroll%20to%20top'%2C%20function()%7B%20window.scrollTo(%7Btop%3A0%2Cbehavior%3A'smooth'%7D)%3B%20%7D))%3B%20panel.appendChild(btn('%E2%9C%95'%2C'Remove%20panel'%2C%20function()%7B%20panel.remove()%3B%20document.getElementById('__mv-style')%20%26%26%20document.getElementById('__mv-style').remove()%3B%20html.style.removeProperty('zoom')%3B%20html.style.removeProperty('-webkit-transform')%3B%20html.style.removeProperty('-webkit-transform-origin')%3B%20html.style.removeProperty('width')%3B%20%7D))%3B%20document.body.appendChild(panel)%3B%20setTimeout(function()%7B%20var%20bw%20%3D%20Math.max(document.body.scrollWidth%2C%20document.documentElement.scrollWidth)%3B%20var%20sw%20%3D%20window.innerWidth%3B%20if(bw%20%3E%20sw%20*%201.1)%7B%20scale%20%3D%20sw%2Fbw%3B%20applyZoom()%3B%20%7D%20%7D%2C%20500)%3B%20%7D)()%3B</div>
-  <button class="copy-btn" onclick="copyCode()">Copy bookmarklet code</button>
+<div id="status">Tap to launch</div>
+
+<div class="steps">
+  <h3>First time setup</h3>
+  <div class="sr"><div class="sn">1</div><div class="st">Tap <em>Launch Topview</em> — script copied to clipboard</div></div>
+  <div class="sr"><div class="sn">2</div><div class="st">Topview opens — wait for it to load fully</div></div>
+  <div class="sr"><div class="sn">3</div><div class="st">Tap the <em>address bar</em>, paste, tap <em>Go</em> — panel appears</div></div>
+  <div class="sr"><div class="sn">4</div><div class="st">After setup, just use your <em>Fix</em> bookmark directly on Topview</div></div>
 </div>
 
-<div class="step">
-  <div class="step-num">Step 2 — Go to Topview (or any site)</div>
-  <p>Open <strong>topview.ai</strong> in Safari normally. Log in as usual.</p>
-</div>
-
-<div class="step">
-  <div class="step-num">Step 3 — Tap the bookmarklet</div>
-  <p>Tap the <strong>address bar</strong>, type <strong>"Mobile"</strong> (or whatever you named it), and tap it.</p>
-  <p>A floating panel appears on screen with zoom controls.</p>
-  <small>Tap it again to remove the panel. All fixes are temporary — refresh to reset.</small>
-</div>
-
-<div class="works-on">
-  <h3>What it does</h3>
-  <ul>
-    <li>Fixes viewport so pinch-zoom works</li>
-    <li>Auto-scales page to fit your screen width</li>
-    <li>Makes buttons &amp; inputs finger-sized (44px)</li>
-    <li>Floating + / − zoom controls</li>
-    <li>Hide/show fixed headers &amp; footers</li>
-    <li>Works on ANY website you're already logged into</li>
-    <li>No app, no install, no server needed</li>
-  </ul>
+<div id="fallback">
+  <p>Clipboard unavailable — copy the code below and paste it in Safari's address bar:</p>
+  <textarea id="bm-text" readonly onclick="this.select()"></textarea>
+  <button id="copy-btn" onclick="manualCopy()">Copy Code</button>
 </div>
 
 <script>
-function copyCode(){
-  const code = document.getElementById('bm-code').textContent;
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(code).then(()=>{
-      const btn = document.querySelector('.copy-btn');
-      btn.textContent = 'Copied ✓';
-      setTimeout(()=>btn.textContent='Copy bookmarklet code',2000);
-    });
+var BM = "javascript:(function()%7Bvar%20existing%3Ddocument.getElementById('__mv-panel')%3Bif(existing)%7Bexisting.remove()%3Breturn%3B%7Dvar%20vp%3Ddocument.querySelector('meta%5Bname%3Dviewport%5D')%3Bif(!vp)%7Bvp%3Ddocument.createElement('meta')%3Bvp.name%3D'viewport'%3Bdocument.head.appendChild(vp)%3B%7Dvp.content%3D'width%3Ddevice-width%2Cinitial-scale%3D1%2Cmaximum-scale%3D5%2Cuser-scalable%3Dyes'%3Bvar%20st%3Ddocument.createElement('style')%3Bst.id%3D'__mv-style'%3Bdocument.head.appendChild(st)%3Bvar%20stackSt%3Ddocument.createElement('style')%3BstackSt.id%3D'__mv-stack'%3Bdocument.head.appendChild(stackSt)%3Bvar%20zoom%3D1%2CtextScale%3D1%2CoverlayScale%3D1%2Cexpanded%3Dfalse%2Cstacked%3Dfalse%3Bvar%20STACK_CSS%3D'*%3Anot(%23__mv-panel)%3Anot(%23__mv-panel%20*)%7Bmax-width%3A100vw%20!important%3Bmin-width%3A0%20!important%3B%7D%5Bstyle*%3D%22flex-direction%3A%20row%22%5D%2C%5Bstyle*%3D%22flex-direction%3Arow%22%5D%7Bflex-direction%3Acolumn%20!important%3B%7D%5Bstyle*%3D%22grid-template-columns%22%5D%7Bgrid-template-columns%3A1fr%20!important%3B%7Dmain%2Csection%2Carticle%2C%5Brole%3Dmain%5D%2C%5Bclass*%3Dcontent%5D%2C%5Bclass*%3Dlayout%5D%2C%5Bclass*%3Dcontainer%5D%2C%5Bclass*%3Dwrapper%5D%2C%5Bclass*%3Dpage%5D%7Bdisplay%3Aflex%20!important%3Bflex-direction%3Acolumn%20!important%3Bwidth%3A100%25%20!important%3Bmax-width%3A100vw%20!important%3Boverflow-x%3Ahidden%20!important%3B%7Dhtml%2Cbody%7Boverflow-x%3Ahidden%20!important%3Bwidth%3A100%25%20!important%3Bmax-width%3A100vw%20!important%3B%7Dtable%7Bdisplay%3Ablock%20!important%3Boverflow-x%3Aauto%20!important%3Bmax-width%3A100vw%20!important%3B%7D'%3Bfunction%20applyAll()%7Bvar%20css%3D%5B'html%7Bzoom%3A'%2Bzoom%2B'%20!important%3Bwidth%3A'%2B(100%2Fzoom)%2B'%25%20!important%3B%7D'%2C'body%7Boverflow-x%3Ahidden%20!important%3Bmin-width%3Aunset%20!important%3B%7D'%2C'button%2C%5Brole%3Dbutton%5D%2Cinput%5Btype%3Dbutton%5D%2Cinput%5Btype%3Dsubmit%5D%7Bmin-height%3A44px%20!important%3B%7D'%2C'input%3Anot(%5Btype%3Dhidden%5D)%2Cselect%2Ctextarea%7Bmin-height%3A44px%20!important%3Bfont-size%3A16px%20!important%3B%7D'%5D%3Bif(textScale!%3D%3D1)css.push('p%2Cspan%2Cli%2Ctd%2Cth%2Ca%2Ch1%2Ch2%2Ch3%2Ch4%2Ch5%2Ch6%2Clabel%7Bfont-size%3Acalc(1em%20*%20'%2BtextScale%2B')%20!important%3B%7D')%3Bcss.push('%5Bdata-mvscaled%5D%7Btransform%3Ascale('%2BoverlayScale%2B')%20!important%3Btransform-origin%3Atop%20left%20!important%3B%7D')%3Bst.textContent%3Dcss.join('%20')%3BstackSt.textContent%3Dstacked%3FSTACK_CSS%3A''%3Bzlbl.textContent%3DMath.round(zoom*100)%2B'%25'%3Btlbl.textContent%3DMath.round(textScale*100)%2B'%25'%3Bolbl.textContent%3DMath.round(overlayScale*100)%2B'%25'%3BstackBtn.style.background%3Dstacked%3F'%23e8ff47'%3A'%2318181c'%3BstackBtn.style.color%3Dstacked%3F'%23000'%3A'%23dddde8'%3BstackBtn.style.borderColor%3Dstacked%3F'%23e8ff47'%3A'%23363640'%3Bpill.textContent%3D'%E2%8A%9E%20'%2B(stacked%3F'%E2%89%A1%20'%3A'')%2B(Math.round(zoom*100)!%3D%3D100%3FMath.round(zoom*100)%2B'%25'%3A'%E2%9C%93')%3B%7Dfunction%20tagOverlays()%7Bdocument.querySelectorAll('%5Bdata-mvscaled%5D').forEach(function(el)%7Bel.removeAttribute('data-mvscaled')%3B%7D)%3Bif(overlayScale%3D%3D%3D1)return%3Bvar%20ww%3Dwindow.innerWidth%2Cwh%3Dwindow.innerHeight%2Call%3Ddocument.querySelectorAll('*')%3Bfor(var%20i%3D0%3Bi%3Call.length%3Bi%2B%2B)%7Bvar%20el%3Dall%5Bi%5D%3Bif(el.id%3D%3D%3D'__mv-panel')continue%3Bvar%20cs%3Dwindow.getComputedStyle(el)%3Bif(cs.position!%3D%3D'fixed'%26%26cs.position!%3D%3D'absolute')continue%3Bif(cs.display%3D%3D%3D'none'%7C%7Ccs.visibility%3D%3D%3D'hidden')continue%3Bvar%20r%3Del.getBoundingClientRect()%3Bif(r.width%3C10%7C%7Cr.height%3C10)continue%3Bif(r.width%3Eww*0.92%26%26r.height%3Ewh*0.92)continue%3Bif(r.top%3C0%7C%7Cr.bottom%3Ewh%2B10)continue%3Bif(el.contains(document.getElementById('__mv-panel')))continue%3Bel.setAttribute('data-mvscaled'%2C'1')%3B%7D%7Dvar%20observer%3Dnew%20MutationObserver(function()%7Bif(overlayScale!%3D%3D1)tagOverlays()%3B%7D)%3Bobserver.observe(document.body%2C%7BchildList%3Atrue%2Csubtree%3Atrue%2Cattributes%3Afalse%7D)%3Bfunction%20autoFit()%7Bvar%20bw%3DMath.max(document.body.scrollWidth%2Cdocument.documentElement.scrollWidth)%2Csw%3Dwindow.innerWidth%3Bif(bw%3Esw*1.1)zoom%3DMath.round((sw%2Fbw)*100)%2F100%3BapplyAll()%3B%7Dfunction%20reset()%7Bzoom%3D1%3BtextScale%3D1%3BoverlayScale%3D1%3Bstacked%3Dfalse%3Bdocument.querySelectorAll('%5Bdata-mvscaled%5D').forEach(function(el)%7Bel.removeAttribute('data-mvscaled')%3B%7D)%3Bst.textContent%3D''%3BstackSt.textContent%3D''%3BapplyAll()%3B%7Dvar%20panel%3Ddocument.createElement('div')%3Bpanel.id%3D'__mv-panel'%3Bpanel.style.cssText%3D'all%3Ainitial%3Bposition%3Afixed%3Bbottom%3A80px%3Bright%3A14px%3Bz-index%3A2147483647%3Bfont-family%3Amonospace%3Bdisplay%3Aflex%3Bflex-direction%3Acolumn%3Balign-items%3Aflex-end%3Bgap%3A8px%3B'%3Bvar%20pill%3Ddocument.createElement('button')%3Bpill.textContent%3D'%E2%8A%9E%20%E2%9C%93'%3Bpill.style.cssText%3D'all%3Aunset%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bjustify-content%3Acenter%3Bpadding%3A8px%2014px%3Bborder-radius%3A20px%3Bbackground%3A%230a0a0c%3Bborder%3A1px%20solid%20%232e2e38%3Bcolor%3A%23e8ff47%3Bfont-size%3A0.75rem%3Bfont-weight%3A700%3Bcursor%3Apointer%3Bfont-family%3Amonospace%3Bbox-shadow%3A0%202px%2016px%20rgba(0%2C0%2C0%2C0.8)%3B-webkit-tap-highlight-color%3Atransparent%3B'%3Bvar%20tray%3Ddocument.createElement('div')%3Btray.style.cssText%3D'display%3Anone%3Bflex-direction%3Acolumn%3Bgap%3A7px%3Bbackground%3A%230a0a0c%3Bborder%3A1px%20solid%20%232e2e38%3Bborder-radius%3A14px%3Bpadding%3A10px%2014px%3Bbox-shadow%3A0%204px%2028px%20rgba(0%2C0%2C0%2C0.9)%3B'%3Bfunction%20setExpanded(on)%7Bexpanded%3Don%3Btray.style.display%3Don%3F'flex'%3A'none'%3Bpill.style.borderColor%3Don%3F'%23e8ff47'%3A'%232e2e38'%3B%7Dpill.addEventListener('click'%2Cfunction()%7BsetExpanded(!expanded)%3B%7D)%3Bpill.addEventListener('touchend'%2Cfunction(e)%7Be.stopPropagation()%3Be.preventDefault()%3BsetExpanded(!expanded)%3B%7D)%3Bvar%20collapseTimer%3Bfunction%20resetCollapseTimer()%7BclearTimeout(collapseTimer)%3BcollapseTimer%3DsetTimeout(function()%7BsetExpanded(false)%3B%7D%2C6000)%3B%7Dtray.addEventListener('touchend'%2Cfunction()%7BresetCollapseTimer()%3B%7D)%3Btray.addEventListener('click'%2Cfunction()%7BresetCollapseTimer()%3B%7D)%3Bfunction%20row()%7Bvar%20r%3Ddocument.createElement('div')%3Br.style.cssText%3D'display%3Aflex%3Balign-items%3Acenter%3Bgap%3A5px%3Bjustify-content%3Acenter'%3Breturn%20r%3B%7Dfunction%20lbl(txt%2Ccolor)%7Bvar%20s%3Ddocument.createElement('span')%3Bs.style.cssText%3D'font-size%3A0.6rem%3Bcolor%3A'%2B(color%7C%7C'%235a5a6e')%2B'%3Bfont-family%3Amonospace%3Bmin-width%3A32px%3Btext-align%3Acenter%3Bflex-shrink%3A0'%3Bs.textContent%3Dtxt%3Breturn%20s%3B%7Dfunction%20tag(txt%2Ccolor)%7Bvar%20s%3Ddocument.createElement('span')%3Bs.style.cssText%3D'font-size%3A0.52rem%3Bcolor%3A'%2B(color%7C%7C'%235a5a6e')%2B'%3Bfont-family%3Amonospace%3Btext-transform%3Auppercase%3Bletter-spacing%3A0.06em%3Bwidth%3A44px%3Btext-align%3Aright%3Bflex-shrink%3A0'%3Bs.textContent%3Dtxt%3Breturn%20s%3B%7Dfunction%20btn(label%2Cfn%2Cbg%2Ccol)%7Bvar%20b%3Ddocument.createElement('button')%3Bb.textContent%3Dlabel%3Bb.style.cssText%3D'all%3Aunset%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bjustify-content%3Acenter%3Bwidth%3A40px%3Bheight%3A34px%3Bborder-radius%3A7px%3Bbackground%3A'%2B(bg%7C%7C'%2318181c')%2B'%3Bborder%3A1px%20solid%20%23363640%3Bcolor%3A'%2B(col%7C%7C'%23dddde8')%2B'%3Bfont-size%3A0.85rem%3Bcursor%3Apointer%3Bfont-family%3Amonospace%3Bflex-shrink%3A0%3B-webkit-tap-highlight-color%3Atransparent%3B'%3Bb.addEventListener('touchend'%2Cfunction(e)%7Be.stopPropagation()%3Be.preventDefault()%3Bfn()%3BresetCollapseTimer()%3B%7D)%3Bb.addEventListener('click'%2Cfunction()%7Bfn()%3BresetCollapseTimer()%3B%7D)%3Breturn%20b%3B%7Dfunction%20divider()%7Bvar%20d%3Ddocument.createElement('div')%3Bd.style.cssText%3D'height%3A1px%3Bbackground%3A%231e1e28%3Bmargin%3A1px%20-4px'%3Breturn%20d%3B%7Dvar%20zlbl%3Dlbl('100%25'%2C'%23e8ff47')%2Ctlbl%3Dlbl('100%25'%2C'%2347c7ff')%2Colbl%3Dlbl('100%25'%2C'%23ff6b35')%3Bvar%20r1%3Drow()%3Br1.appendChild(tag('Page'%2C'%23e8ff4788'))%3Br1.appendChild(btn('-'%2Cfunction()%7Bzoom%3DMath.max(0.3%2C%2B(zoom-0.1).toFixed(1))%3BapplyAll()%3B%7D))%3Br1.appendChild(zlbl)%3Br1.appendChild(btn('%2B'%2Cfunction()%7Bzoom%3DMath.min(2.5%2C%2B(zoom%2B0.1).toFixed(1))%3BapplyAll()%3B%7D))%3Br1.appendChild(btn('%E2%9E%B7'%2Cfunction()%7BautoFit()%3B%7D))%3Bvar%20r2%3Drow()%3Br2.appendChild(tag('Text'%2C'%2347c7ff88'))%3Br2.appendChild(btn('-'%2Cfunction()%7BtextScale%3DMath.max(0.5%2C%2B(textScale-0.1).toFixed(1))%3BapplyAll()%3B%7D))%3Br2.appendChild(tlbl)%3Br2.appendChild(btn('%2B'%2Cfunction()%7BtextScale%3DMath.min(2.0%2C%2B(textScale%2B0.1).toFixed(1))%3BapplyAll()%3B%7D))%3Bvar%20r3%3Drow()%3Br3.appendChild(tag('Popups'%2C'%23ff6b3588'))%3Br3.appendChild(btn('-'%2Cfunction()%7BoverlayScale%3DMath.max(0.4%2C%2B(overlayScale-0.1).toFixed(1))%3BtagOverlays()%3BapplyAll()%3B%7D))%3Br3.appendChild(olbl)%3Br3.appendChild(btn('%2B'%2Cfunction()%7BoverlayScale%3DMath.min(1.5%2C%2B(overlayScale%2B0.1).toFixed(1))%3BtagOverlays()%3BapplyAll()%3B%7D))%3Br3.appendChild(btn('%E2%8A%99'%2Cfunction()%7BtagOverlays()%3BapplyAll()%3B%7D))%3Bvar%20r5%3Drow()%3Bvar%20stackBtn%3Dbtn('%E2%89%A1%20Stack'%2Cfunction()%7Bstacked%3D!stacked%3BapplyAll()%3B%7D%2C'%2318181c'%2C'%23dddde8')%3BstackBtn.style.width%3D'100%25'%3BstackBtn.style.padding%3D'0%2012px'%3BstackBtn.style.fontSize%3D'0.72rem'%3Br5.appendChild(stackBtn)%3Bvar%20r4%3Drow()%3Br4.appendChild(btn('%E2%86%91'%2Cfunction()%7Bwindow.scrollTo(%7Btop%3A0%2Cbehavior%3A'smooth'%7D)%3B%7D))%3Br4.appendChild(btn('%E2%96%A4'%2Cfunction()%7Bvar%20all%3Ddocument.querySelectorAll('*')%2Cfound%3D%5B%5D%3Bfor(var%20i%3D0%3Bi%3Call.length%3Bi%2B%2B)%7Bvar%20cs%3Dwindow.getComputedStyle(all%5Bi%5D)%3Bif((cs.position%3D%3D%3D'fixed'%7C%7Ccs.position%3D%3D%3D'sticky')%26%26all%5Bi%5D.id!%3D%3D'__mv-panel')found.push(all%5Bi%5D)%3B%7Dvar%20hidden%3Dfound%5B0%5D%26%26found%5B0%5D.style.display%3D%3D%3D'none'%3Bfound.forEach(function(el)%7Bel.style.setProperty('display'%2Chidden%3F''%3A'none'%2C'important')%3B%7D)%3B%7D))%3Br4.appendChild(btn('%E2%86%BA'%2Cfunction()%7Breset()%3B%7D))%3Br4.appendChild(btn('%E2%9C%95'%2Cfunction()%7Breset()%3Bobserver.disconnect()%3Bpanel.remove()%3Bst.remove()%3BstackSt.remove()%3B%7D%2C'%232a1010'))%3Btray.appendChild(r1)%3Btray.appendChild(divider())%3Btray.appendChild(r2)%3Btray.appendChild(divider())%3Btray.appendChild(r3)%3Btray.appendChild(divider())%3Btray.appendChild(r5)%3Btray.appendChild(divider())%3Btray.appendChild(r4)%3Bpanel.appendChild(tray)%3Bpanel.appendChild(pill)%3Bdocument.body.appendChild(panel)%3BsetTimeout(function()%7BautoFit()%3BsetExpanded(true)%3BresetCollapseTimer()%3B%7D%2C400)%3B%7D)()%3B";
+
+function launch() {
+  var status = document.getElementById('status');
+  function doOpen() {
+    status.textContent = '✓ Copied — opening Topview…';
+    status.classList.add('ok');
+    setTimeout(function(){ window.location.href = 'https://www.topview.ai'; }, 900);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(BM).then(doOpen).catch(showFallback);
   } else {
-    const ta = document.createElement('textarea');
-    ta.value = code; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); ta.remove();
-    const btn = document.querySelector('.copy-btn');
-    btn.textContent = 'Copied ✓';
-    setTimeout(()=>btn.textContent='Copy bookmarklet code',2000);
+    var ta = document.createElement('textarea');
+    ta.value = BM;
+    ta.style.cssText = 'position:fixed;top:-9999px;opacity:0';
+    ta.setAttribute('readonly','');
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try {
+      var range = document.createRange(); range.selectNodeContents(ta);
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      ta.setSelectionRange(0, 999999);
+    } catch(e){}
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch(e){}
+    document.body.removeChild(ta);
+    if (ok) doOpen(); else showFallback();
   }
 }
-</script>
 
+function showFallback() {
+  document.getElementById('fallback').style.display = 'block';
+  document.getElementById('bm-text').value = BM;
+  document.getElementById('status').textContent = 'Copy manually from box below';
+}
+
+function manualCopy() {
+  var ta = document.getElementById('bm-text');
+  ta.select(); ta.setSelectionRange(0,99999);
+  try { document.execCommand('copy'); document.getElementById('copy-btn').textContent = 'Copied ✓'; } catch(e){}
+}
+
+(function pwa(){
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" fill="#0a0a0c"/><polygon points="256,50 460,165 460,345 256,460 52,345 52,165" fill="none" stroke="#e8ff47" stroke-width="22"/><text x="256" y="305" text-anchor="middle" font-family="monospace" font-size="150" font-weight="bold" fill="#e8ff47">TV</text></svg>';
+  var icon = 'data:image/svg+xml;base64,' + btoa(svg);
+  document.getElementById('apple-icon').href = icon;
+  var mf = {name:'Topview Launcher',short_name:'Topview',start_url:'.',display:'standalone',
+    background_color:'#0a0a0c',theme_color:'#0a0a0c',
+    icons:[{src:icon,sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}]};
+  document.getElementById('pwa-manifest').href = URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
+  if('serviceWorker' in navigator){
+    var sw="const C='tv-v1';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll([self.location.href])));self.skipWaiting();});self.addEventListener('activate',e=>e.waitUntil(clients.claim()));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));";
+    navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})),{scope:'./'}).catch(function(){});
+  }
+  if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&window.matchMedia('(display-mode:browser)').matches&&!sessionStorage.getItem('ph')){
+    sessionStorage.setItem('ph','1');
+  }
+})();
+</script>
 </body>
 </html>
